@@ -8,6 +8,7 @@ class testScene extends Phaser.Scene {
         this.my.sprite.bullet = [];
         this.my.sprite.enemyBullets = [];
         this.maxBullets = 4;
+
     }
 
     
@@ -29,7 +30,7 @@ class testScene extends Phaser.Scene {
     create() {
         let my = this.my;
         my.sprite.player = this.add.sprite(500, 750, "player");
-        my.sprite.enemyPink1 = this.add.sprite(450, 150, "enemyPink");
+        my.sprite.enemyPink1 = this.add.follower(this.path2, 450, 150, "enemyPink");
         my.sprite.enemyPink2 = this.add.sprite(550, 150, "enemyPink");
         my.sprite.enemyPink3 = this.add.sprite(350, 150, "enemyPink");
         my.sprite.enemyPink4 = this.add.sprite(250, 150, "enemyPink");
@@ -40,7 +41,7 @@ class testScene extends Phaser.Scene {
         my.sprite.enemyPink4.setScale(.5);
         my.sprite.enemyPink5.setScale(.5);
         
-        my.sprite.enemyGreen1 = this.add.sprite(350, 250, "enemyGreen");
+        my.sprite.enemyGreen1 = this.add.follower(this.path1, 350, 250, "enemyGreen");
         my.sprite.enemyGreen2 = this.add.sprite(450, 250, "enemyGreen");
         my.sprite.enemyGreen3 = this.add.sprite(550, 250, "enemyGreen");
         my.sprite.enemyGreen1.setScale(.5);
@@ -85,6 +86,25 @@ class testScene extends Phaser.Scene {
             repeat: 5,
             hideOnComplete: true
         });
+
+        this.points1 = [
+            292, 212,
+            124, 313,
+            787, 460,
+            823, 741,
+            9,   794
+        ];
+
+        this.points2 = [
+            773, 115,
+            644, 578,
+            348, 299,
+            187, 411,
+            908, 789
+        ];
+
+        this.path1 = new Phaser.Curves.Spline(this.points1);
+        this.path2 = new Phaser.Curves.Spline(this.points2);
     }
 
     update() {
@@ -104,6 +124,29 @@ class testScene extends Phaser.Scene {
             my.sprite.enemyBullets.push(enemyBullet2);
             enemyBullet.setScale(0.35);
             enemyBullet2.setScale(0.35);
+            my.sprite.enemyGreen1.startFollow({
+                from: 0,
+                to: 1,
+                delay: 0,
+                duration: 2000,
+                ease: 'Sine.easeInOut',
+                repeat: -1,
+                yoyo: true,
+                rotateToPath: true,
+                rotationOffset: -90
+            });
+
+            my.sprite.enemyPink1.startFollow({
+                from: 0,
+                to: 1,
+                delay: 0,
+                duration: 2000,
+                ease: 'Sine.easeInOut',
+                repeat: -1,
+                yoyo: true,
+                rotateToPath: true,
+                rotationOffset: -90
+            });
         }
 
         if(Phaser.Input.Keyboard.JustDown(this.spaceKey)){
