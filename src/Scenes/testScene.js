@@ -6,6 +6,7 @@ class testScene extends Phaser.Scene {
         super('testScene');
         this.my = {sprite: {}};
         this.my.sprite.bullet = [];
+        this.my.sprite.enemyBullets = [];
         this.maxBullets = 4;
     }
 
@@ -13,9 +14,16 @@ class testScene extends Phaser.Scene {
 
     preload() {
         this.load.image("bulletPlayer", "assets/laserBlue1.png");
+        this.load.image("bulletGreen", "assets/laserGreen1.png");
+        this.load.image("bulletPink", "assets/laserPink1.png");
         this.load.image("player", "assets/playerShip1_blue.png");
         this.load.image("enemyPink", "assets/shipPink_manned.png");
         this.load.image("enemyGreen", "assets/shipGreen_manned.png");
+        this.load.image("pinkExplosion", "assets/laserPink_burst.png");
+        this.load.image("blueExplosion", "assets/laserBlue_burst.png");
+        this.load.image("greenExplosion", "assets/laserGreen_burst.png");
+
+
     }
 
     create() {
@@ -43,9 +51,40 @@ class testScene extends Phaser.Scene {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.fKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
 
         this.playerSpeed = 10;
         this.bulletSpeed = 24;
+
+        this.anims.create({
+            key: "explosionPink",
+            frames: [
+                {key: "pinkExplosion"}
+            ],
+            framerate: 30,
+            repeat: 5,
+            hideOnComplete: true
+        });
+
+        this.anims.create({
+            key: "explosionBlue",
+            frames: [
+                {key: "blueExplosion"}
+            ],
+            framerate: 30,
+            repeat: 5,
+            hideOnComplete: true
+        });
+
+        this.anims.create({
+            key: "explosionGreen",
+            frames: [
+                {key: "greenExplosion"}
+            ],
+            framerate: 30,
+            repeat: 5,
+            hideOnComplete: true
+        });
     }
 
     update() {
@@ -56,6 +95,15 @@ class testScene extends Phaser.Scene {
         }
         if (this.dKey.isDown) {
             my.sprite.player.x += this.playerSpeed; //this.player.x = this.player.x + 10;
+        }
+
+        if (this.fKey.isDown){
+            let enemyBullet = this.add.sprite(my.sprite.enemyGreen1.x, my.sprite.enemyGreen1.y - (my.sprite.enemyGreen1.displayHeight/2), "bulletGreen");
+            let enemyBullet2 = this.add.sprite(my.sprite.enemyPink1.x, my.sprite.enemyPink1.y - (my.sprite.enemyPink1.displayHeight/2), "bulletPink");
+            my.sprite.enemyBullets.push(enemyBullet);
+            my.sprite.enemyBullets.push(enemyBullet2);
+            enemyBullet.setScale(0.35);
+            enemyBullet2.setScale(0.35);
         }
 
         if(Phaser.Input.Keyboard.JustDown(this.spaceKey)){
@@ -72,7 +120,56 @@ class testScene extends Phaser.Scene {
             bullet.y -= this.bulletSpeed;
         }
 
+        for(let enemybullet of my.sprite.enemyBullets){
+            enemybullet.y += this.bulletSpeed;
+        }
+
         my.sprite.bullet = my.sprite.bullet.filter((bullet) => bullet.y > -(bullet.displayHeight/2));
+        my.sprite.enemyBullets = my.sprite.enemyBullets.filter((enemyBullet) => enemyBullet.y < (config.height + 100));
+        
+
+        for(let bullet of my.sprite.bullet){
+            for (let enemy of [
+                my.sprite.enemyGreen1,
+                my.sprite.enemyGreen2,
+                my.sprite.enemyGreen3,
+                my.sprite.enemyPink1,
+                my.sprite.enemyPink2,
+                my.sprite.enemyPink3,
+                my.sprite.enemyPink4,
+                my.sprite.enemyPink5,
+            ]) {
+                if(this.collides(enemy, bullet)) {
+                this.explosionBlue = this.add.sprite(bullet.x, bullet.y, "blueExplosion").play("explosionBlue");
+                bullet.y = -100;
+                enemy.visible = false;
+                enemy.x = -100;
+                this.explosionBlue.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                    enemy.visible = true;
+                    //.x = Math.random()*config.width;
+                }, this);
+                }
+            }
+        }
+        for(let enemybullet of my.sprite.enemyBullets){
+            //console.log((enemybullet.texture.key));
+            if(this.collides(my.sprite.player, enemybullet)){
+                if(enemybullet.texture.key == "bulletGreen"){
+                    this.explosionGreen = this.add.sprite(enemybullet.x, enemybullet.y, "greenExplosion").play("explosionGreen");
+                    enemybullet.y = 900;
+                }
+                if(enemybullet.texture.key == "bulletPink"){
+                    this.explosionPink = this.add.sprite(enemybullet.x, enemybullet.y, "pinkExplosion").play("explosionPink");
+                    enemybullet.y = 900;
+                }
+            }
+        }
+    }
+
+    collides(a,b){
+        if(Math.abs(a.x - b.x) > (a.displayWidth/2 + b.displayWidth/2)) return false;
+        if(Math.abs(a.y - b.y) > (a.displayHeight/2 + b.displayHeight/2)) return false;
+        return true;
     }
 
 }
